@@ -12,9 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SignupRecruiterRouteImport } from './routes/signup.recruiter'
 import { Route as SignupEmployeeRouteImport } from './routes/signup.employee'
+import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
+import { Route as AuthenticatedEmployeeRouteImport } from './routes/_authenticated/employee'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -29,6 +32,10 @@ const FaqRoute = FaqRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,12 +53,24 @@ const SignupEmployeeRoute = SignupEmployeeRouteImport.update({
   path: '/signup/employee',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRecruiterRoute = AuthenticatedRecruiterRouteImport.update({
+  id: '/recruiter',
+  path: '/recruiter',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedEmployeeRoute = AuthenticatedEmployeeRouteImport.update({
+  id: '/employee',
+  path: '/employee',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/employee': typeof AuthenticatedEmployeeRoute
+  '/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
 }
@@ -60,15 +79,20 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/employee': typeof AuthenticatedEmployeeRoute
+  '/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/_authenticated/employee': typeof AuthenticatedEmployeeRoute
+  '/_authenticated/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
 }
@@ -79,6 +103,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/login'
+    | '/employee'
+    | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
   fileRoutesByTo: FileRoutesByTo
@@ -87,20 +113,26 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/login'
+    | '/employee'
+    | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/contact'
     | '/faq'
     | '/login'
+    | '/_authenticated/employee'
+    | '/_authenticated/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
@@ -131,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -152,11 +191,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupEmployeeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/recruiter': {
+      id: '/_authenticated/recruiter'
+      path: '/recruiter'
+      fullPath: '/recruiter'
+      preLoaderRoute: typeof AuthenticatedRecruiterRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/employee': {
+      id: '/_authenticated/employee'
+      path: '/employee'
+      fullPath: '/employee'
+      preLoaderRoute: typeof AuthenticatedEmployeeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
+interface AuthenticatedRouteChildren {
+  AuthenticatedEmployeeRoute: typeof AuthenticatedEmployeeRoute
+  AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedEmployeeRoute: AuthenticatedEmployeeRoute,
+  AuthenticatedRecruiterRoute: AuthenticatedRecruiterRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
@@ -166,3 +234,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
