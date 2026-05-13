@@ -56,7 +56,7 @@ function Dashboard() {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    await supabase.from("applications").update({ status }).eq("id", id);
+    await supabase.from("applications").update({ status: status as any }).eq("id", id);
     toast.success("Statut mis à jour");
     if (openOffer) openApplicants(openOffer);
   };
