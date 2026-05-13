@@ -18,6 +18,9 @@ import { Route as SignupRecruiterRouteImport } from './routes/signup.recruiter'
 import { Route as SignupEmployeeRouteImport } from './routes/signup.employee'
 import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
 import { Route as AuthenticatedEmployeeRouteImport } from './routes/_authenticated/employee'
+import { Route as AuthenticatedEmployeeTrackingRouteImport } from './routes/_authenticated/employee.tracking'
+import { Route as AuthenticatedEmployeeSpaceRouteImport } from './routes/_authenticated/employee.space'
+import { Route as AuthenticatedEmployeeJobsRouteImport } from './routes/_authenticated/employee.jobs'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -63,26 +66,50 @@ const AuthenticatedEmployeeRoute = AuthenticatedEmployeeRouteImport.update({
   path: '/employee',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEmployeeTrackingRoute =
+  AuthenticatedEmployeeTrackingRouteImport.update({
+    id: '/tracking',
+    path: '/tracking',
+    getParentRoute: () => AuthenticatedEmployeeRoute,
+  } as any)
+const AuthenticatedEmployeeSpaceRoute =
+  AuthenticatedEmployeeSpaceRouteImport.update({
+    id: '/space',
+    path: '/space',
+    getParentRoute: () => AuthenticatedEmployeeRoute,
+  } as any)
+const AuthenticatedEmployeeJobsRoute =
+  AuthenticatedEmployeeJobsRouteImport.update({
+    id: '/jobs',
+    path: '/jobs',
+    getParentRoute: () => AuthenticatedEmployeeRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
-  '/employee': typeof AuthenticatedEmployeeRoute
+  '/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
+  '/employee/space': typeof AuthenticatedEmployeeSpaceRoute
+  '/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
-  '/employee': typeof AuthenticatedEmployeeRoute
+  '/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
+  '/employee/space': typeof AuthenticatedEmployeeSpaceRoute
+  '/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -91,10 +118,13 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
-  '/_authenticated/employee': typeof AuthenticatedEmployeeRoute
+  '/_authenticated/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/_authenticated/recruiter': typeof AuthenticatedRecruiterRoute
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/_authenticated/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
+  '/_authenticated/employee/space': typeof AuthenticatedEmployeeSpaceRoute
+  '/_authenticated/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -107,6 +137,9 @@ export interface FileRouteTypes {
     | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/employee/jobs'
+    | '/employee/space'
+    | '/employee/tracking'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -117,6 +150,9 @@ export interface FileRouteTypes {
     | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/employee/jobs'
+    | '/employee/space'
+    | '/employee/tracking'
   id:
     | '__root__'
     | '/'
@@ -128,6 +164,9 @@ export interface FileRouteTypes {
     | '/_authenticated/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/_authenticated/employee/jobs'
+    | '/_authenticated/employee/space'
+    | '/_authenticated/employee/tracking'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -205,16 +244,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/employee/tracking': {
+      id: '/_authenticated/employee/tracking'
+      path: '/tracking'
+      fullPath: '/employee/tracking'
+      preLoaderRoute: typeof AuthenticatedEmployeeTrackingRouteImport
+      parentRoute: typeof AuthenticatedEmployeeRoute
+    }
+    '/_authenticated/employee/space': {
+      id: '/_authenticated/employee/space'
+      path: '/space'
+      fullPath: '/employee/space'
+      preLoaderRoute: typeof AuthenticatedEmployeeSpaceRouteImport
+      parentRoute: typeof AuthenticatedEmployeeRoute
+    }
+    '/_authenticated/employee/jobs': {
+      id: '/_authenticated/employee/jobs'
+      path: '/jobs'
+      fullPath: '/employee/jobs'
+      preLoaderRoute: typeof AuthenticatedEmployeeJobsRouteImport
+      parentRoute: typeof AuthenticatedEmployeeRoute
+    }
   }
 }
 
+interface AuthenticatedEmployeeRouteChildren {
+  AuthenticatedEmployeeJobsRoute: typeof AuthenticatedEmployeeJobsRoute
+  AuthenticatedEmployeeSpaceRoute: typeof AuthenticatedEmployeeSpaceRoute
+  AuthenticatedEmployeeTrackingRoute: typeof AuthenticatedEmployeeTrackingRoute
+}
+
+const AuthenticatedEmployeeRouteChildren: AuthenticatedEmployeeRouteChildren = {
+  AuthenticatedEmployeeJobsRoute: AuthenticatedEmployeeJobsRoute,
+  AuthenticatedEmployeeSpaceRoute: AuthenticatedEmployeeSpaceRoute,
+  AuthenticatedEmployeeTrackingRoute: AuthenticatedEmployeeTrackingRoute,
+}
+
+const AuthenticatedEmployeeRouteWithChildren =
+  AuthenticatedEmployeeRoute._addFileChildren(
+    AuthenticatedEmployeeRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedEmployeeRoute: typeof AuthenticatedEmployeeRoute
+  AuthenticatedEmployeeRoute: typeof AuthenticatedEmployeeRouteWithChildren
   AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedEmployeeRoute: AuthenticatedEmployeeRoute,
+  AuthenticatedEmployeeRoute: AuthenticatedEmployeeRouteWithChildren,
   AuthenticatedRecruiterRoute: AuthenticatedRecruiterRoute,
 }
 
