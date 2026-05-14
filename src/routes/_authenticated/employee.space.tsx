@@ -12,8 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Upload, FileText, Sparkles, Languages, CheckCircle2, Download, Briefcase, Eye, TrendingUp, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
-import { useServerFn } from "@tanstack/react-start";
-import { aiCorrectCv, aiTranslateCv } from "@/lib/ai.functions";
+import { correctCvWithAi, translateCvWithAi } from "@/lib/ai-edge";
 import { extractCvText } from "@/lib/cv-extract";
 
 export const Route = createFileRoute("/_authenticated/employee/space")({ component: EmployeeSpace });
@@ -29,8 +28,6 @@ function EmployeeSpace() {
   const [aiLoading, setAiLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadedName, setUploadedName] = useState<string | null>(null);
-  const correctFn = useServerFn(aiCorrectCv);
-  const translateFn = useServerFn(aiTranslateCv);
 
   const load = async () => {
     if (!user) return;
@@ -93,7 +90,7 @@ function EmployeeSpace() {
     if (!cvText) return;
     setAiLoading(true);
     try {
-      const r = await correctFn({ data: { text: cvText } });
+      const r = await correctCvWithAi(cvText);
       setCvText(r.text);
       toast.success("Corrigé");
     } catch (e: any) { toast.error(e.message); } finally { setAiLoading(false); }
@@ -103,7 +100,7 @@ function EmployeeSpace() {
     setAiLoading(true);
     try {
       const target = /[a-z]\s+(le|la|les|un|une|des|et)\s/i.test(cvText) ? "en" : "fr";
-      const r = await translateFn({ data: { text: cvText, target } });
+      const r = await translateCvWithAi(cvText, target);
       setCvText(r.text);
       toast.success("Traduit");
     } catch (e: any) { toast.error(e.message); } finally { setAiLoading(false); }
