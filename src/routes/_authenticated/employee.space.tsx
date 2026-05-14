@@ -191,20 +191,29 @@ function EmployeeSpace() {
               <TabsTrigger value="tools"><Sparkles className="mr-2 h-4 w-4" />{t("employee.aiTools")}</TabsTrigger>
             </TabsList>
             <TabsContent value="edit" className="grid gap-4 md:grid-cols-2">
-              <Textarea value={cvText} onChange={(e) => setCvText(e.target.value)} rows={18} placeholder="Contenu du CV..." />
-              <div className="rounded-xl border bg-card p-4 text-sm whitespace-pre-wrap max-h-[450px] overflow-auto">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">{t("employee.livePreview")}</div>
-                {cvText || <span className="text-muted-foreground">—</span>}
+              <Textarea value={cvText} onChange={(e) => setCvText(e.target.value)} rows={20} placeholder="Contenu du CV..." className="font-mono text-sm" />
+              <div className="rounded-xl border bg-white text-slate-900 shadow-inner p-6 text-sm max-h-[500px] overflow-auto">
+                <div className="mb-3 flex items-center justify-between border-b pb-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("employee.livePreview")}</div>
+                  <div className="text-[10px] text-slate-400">{cvText.length} car.</div>
+                </div>
+                {cvText ? (
+                  <article className="prose prose-sm max-w-none whitespace-pre-wrap leading-relaxed text-slate-800">
+                    {cvText}
+                  </article>
+                ) : (
+                  <span className="text-slate-400">Aucun contenu — uploadez un CV ou écrivez ici.</span>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="tools" className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Button onClick={runTranslate} disabled={aiLoading} variant="outline" className="gap-2"><Languages className="h-4 w-4" />{t("employee.translate")}</Button>
-                <Button onClick={runCorrect} disabled={aiLoading} variant="outline" className="gap-2"><CheckCircle2 className="h-4 w-4" />{t("employee.grammar")}</Button>
+                <Button onClick={runTranslate} disabled={aiLoading || !cvText} variant="outline" className="gap-2"><Languages className="h-4 w-4" />{t("employee.translate")}</Button>
+                <Button onClick={runCorrect} disabled={aiLoading || !cvText} variant="outline" className="gap-2"><CheckCircle2 className="h-4 w-4" />{t("employee.grammar")}</Button>
               </div>
-              <div className="rounded-xl border bg-card p-4 text-sm whitespace-pre-wrap max-h-[400px] overflow-auto">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">{t("employee.livePreview")}</div>
-                {aiLoading ? "..." : cvText}
+              <div className="rounded-xl border bg-white text-slate-900 p-6 text-sm whitespace-pre-wrap max-h-[400px] overflow-auto leading-relaxed">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{t("employee.livePreview")}</div>
+                {aiLoading ? <span className="text-slate-400">Traitement IA…</span> : cvText || <span className="text-slate-400">—</span>}
               </div>
             </TabsContent>
           </Tabs>
