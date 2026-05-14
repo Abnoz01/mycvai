@@ -61,21 +61,22 @@ Deno.serve(async (req) => {
   try {
     const apiKey = Deno.env.get("AZURE_ANTHROPIC_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const supabaseKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const authHeader = req.headers.get("Authorization");
 
     if (!apiKey) throw new Error("Missing AZURE_ANTHROPIC_API_KEY");
-    if (!supabaseUrl || !supabaseKey) throw new Error("Missing Supabase configuration");
+    if (!supabaseUrl || !serviceKey) throw new Error("Missing Supabase configuration");
     if (!authHeader) {
       return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader } },
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    const admin = createClient(supabaseUrl, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    const { data: userData, error: userError } = await admin.auth.getUser(token);
     if (userError || !userData.user) {
+      console.error("Auth failed:", userError?.message);
       return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
