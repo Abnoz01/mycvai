@@ -14,6 +14,7 @@ import { Upload, FileText, Sparkles, Languages, CheckCircle2, Download, Briefcas
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { aiCorrectCv, aiTranslateCv } from "@/lib/ai.functions";
+import { extractCvText } from "@/lib/cv-extract";
 
 export const Route = createFileRoute("/_authenticated/employee/space")({ component: EmployeeSpace });
 
@@ -26,6 +27,8 @@ function EmployeeSpace() {
   const [aiTab, setAiTab] = useState<"edit" | "tools">("edit");
   const [cvText, setCvText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedName, setUploadedName] = useState<string | null>(null);
   const correctFn = useServerFn(aiCorrectCv);
   const translateFn = useServerFn(aiTranslateCv);
 
