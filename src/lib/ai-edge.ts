@@ -1,13 +1,26 @@
 import { supabase } from "@/integrations/supabase/client";
 
 async function invokeAiCv<T>(body: Record<string, unknown>): Promise<T> {
+  const { data: userData, error: authError } = await supabase.auth.getUser();
+  if (authError || !userData.user) {
+    await supabase.auth.signOut({ scope: "local" });
+    throw new Error("Votre session a expiré. Veuillez vous reconnecter.");
+  }
+
   const { data: sessionData } = await supabase.auth.getSession();
   const token = sessionData.session?.access_token;
+  if (!token) throw new Error("Votre session a expiré. Veuillez vous reconnecter.");
+
   const { data, error } = await supabase.functions.invoke("ai-cv", {
     body,
-    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    headers: { Authorization: `Bearer ${token}` },
   });
-  if (error) throw new Error(error.message);
+  if (error) {
+    const message = error.message.includes("401")
+      ? "Votre session a expiré. Veuillez vous reconnecter."
+      : error.message;
+    throw new Error(message);
+  }
   return data as T;
 }
 
