@@ -74,8 +74,8 @@ export function TopBar({ companyName }: { companyName?: string }) {
             </Button>
           )}
           {role && session && (
-            <Link to={role === "recruiter" ? "/recruiter/dashboard" : "/employee/space"}>
-              <Button size="sm" variant="outline">{role === "recruiter" ? t("nav.recruiter") : t("nav.employee")}</Button>
+            <Link to={role === "admin" ? "/admin/dashboard" : role === "recruiter" ? "/recruiter/dashboard" : "/employee/space"}>
+              <Button size="sm" variant="outline">{role === "admin" ? "Admin" : role === "recruiter" ? t("nav.recruiter") : t("nav.employee")}</Button>
             </Link>
           )}
         </div>
