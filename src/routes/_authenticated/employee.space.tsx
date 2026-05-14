@@ -63,27 +63,30 @@ function EmployeeSpace() {
 
   const uploadCv = async (file: File) => {
     if (!user) return;
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/cv.${ext}`;
-    const { error } = await supabase.storage.from("cvs").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/cv.${ext}`;
+      const { error } = await supabase.storage.from("cvs").upload(path, file, { upsert: true });
+      if (error) { toast.error(error.message); return; }
 
-    const isPlainText = file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
-    const text = isPlainText
-      ? await file.text().then((value) => value.replace(/\u0000/g, "")).catch(() => "")
-      : "";
-    const nextCvText = text || cvText;
-    if (text) setCvText(text);
+      const extracted = await extractCvText(file);
+      const nextCvText = extracted || cvText;
+      if (extracted) setCvText(extracted);
 
-    const { error: profileError } = await supabase.from("employee_profiles").upsert({
-      user_id: user.id,
-      cv_path: path,
-      cv_text: nextCvText,
-      cv_score: Math.min(100, (nextCvText?.length ?? 0) / 30),
-    });
-    if (profileError) return toast.error(profileError.message);
-    toast.success("CV uploaded");
-    load();
+      const { error: profileError } = await supabase.from("employee_profiles").upsert({
+        user_id: user.id,
+        cv_path: path,
+        cv_text: nextCvText,
+        cv_score: Math.min(100, (nextCvText?.length ?? 0) / 30),
+      });
+      if (profileError) { toast.error(profileError.message); return; }
+      setUploadedName(file.name);
+      toast.success(extracted ? `CV uploaded · ${extracted.length} caractères extraits` : "CV uploaded");
+      load();
+    } finally {
+      setUploading(false);
+    }
   };
 
   const runCorrect = async () => {
