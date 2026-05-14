@@ -1,7 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 
 async function invokeAiCv<T>(body: Record<string, unknown>): Promise<T> {
-  const { data, error } = await supabase.functions.invoke("ai-cv", { body });
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  const { data, error } = await supabase.functions.invoke("ai-cv", {
+    body,
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  });
   if (error) throw new Error(error.message);
   return data as T;
 }
