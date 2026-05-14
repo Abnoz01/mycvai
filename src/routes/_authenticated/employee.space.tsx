@@ -63,9 +63,21 @@ function EmployeeSpace() {
     const path = `${user.id}/cv.${ext}`;
     const { error } = await supabase.storage.from("cvs").upload(path, file, { upsert: true });
     if (error) return toast.error(error.message);
-    const text = await file.text().catch(() => "");
+
+    const isPlainText = file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
+    const text = isPlainText
+      ? await file.text().then((value) => value.replace(/\u0000/g, "")).catch(() => "")
+      : "";
+    const nextCvText = text || cvText;
     if (text) setCvText(text);
-    await supabase.from("employee_profiles").upsert({ user_id: user.id, cv_path: path, cv_text: text || cvText });
+
+    const { error: profileError } = await supabase.from("employee_profiles").upsert({
+      user_id: user.id,
+      cv_path: path,
+      cv_text: nextCvText,
+      cv_score: Math.min(100, (nextCvText?.length ?? 0) / 30),
+    });
+    if (profileError) return toast.error(profileError.message);
     toast.success("CV uploaded");
     load();
   };
