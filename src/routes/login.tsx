@@ -25,7 +25,8 @@ function Login() {
 
   useEffect(() => {
     if (session && role) {
-      navigate({ to: role === "recruiter" ? "/recruiter/dashboard" : "/employee/space" });
+      const target = role === "admin" ? "/admin/dashboard" : role === "recruiter" ? "/recruiter/dashboard" : "/employee/space";
+      navigate({ to: target });
     }
   }, [session, role, navigate]);
 

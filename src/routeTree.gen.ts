@@ -18,6 +18,7 @@ import { Route as SignupRecruiterRouteImport } from './routes/signup.recruiter'
 import { Route as SignupEmployeeRouteImport } from './routes/signup.employee'
 import { Route as AuthenticatedRecruiterRouteImport } from './routes/_authenticated/recruiter'
 import { Route as AuthenticatedEmployeeRouteImport } from './routes/_authenticated/employee'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedRecruiterTalentsRouteImport } from './routes/_authenticated/recruiter.talents'
 import { Route as AuthenticatedRecruiterPublishRouteImport } from './routes/_authenticated/recruiter.publish'
 import { Route as AuthenticatedRecruiterDashboardRouteImport } from './routes/_authenticated/recruiter.dashboard'
@@ -25,6 +26,12 @@ import { Route as AuthenticatedRecruiterCandidatesRouteImport } from './routes/_
 import { Route as AuthenticatedEmployeeTrackingRouteImport } from './routes/_authenticated/employee.tracking'
 import { Route as AuthenticatedEmployeeSpaceRouteImport } from './routes/_authenticated/employee.space'
 import { Route as AuthenticatedEmployeeJobsRouteImport } from './routes/_authenticated/employee.jobs'
+import { Route as AuthenticatedAdminUsersRouteImport } from './routes/_authenticated/admin.users'
+import { Route as AuthenticatedAdminReviewsRouteImport } from './routes/_authenticated/admin.reviews'
+import { Route as AuthenticatedAdminOffersRouteImport } from './routes/_authenticated/admin.offers'
+import { Route as AuthenticatedAdminMessagesRouteImport } from './routes/_authenticated/admin.messages'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminCompaniesRouteImport } from './routes/_authenticated/admin.companies'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -70,6 +77,11 @@ const AuthenticatedEmployeeRoute = AuthenticatedEmployeeRouteImport.update({
   path: '/employee',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedRecruiterTalentsRoute =
   AuthenticatedRecruiterTalentsRouteImport.update({
     id: '/talents',
@@ -112,16 +124,58 @@ const AuthenticatedEmployeeJobsRoute =
     path: '/jobs',
     getParentRoute: () => AuthenticatedEmployeeRoute,
   } as any)
+const AuthenticatedAdminUsersRoute = AuthenticatedAdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminReviewsRoute =
+  AuthenticatedAdminReviewsRouteImport.update({
+    id: '/reviews',
+    path: '/reviews',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminOffersRoute =
+  AuthenticatedAdminOffersRouteImport.update({
+    id: '/offers',
+    path: '/offers',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMessagesRoute =
+  AuthenticatedAdminMessagesRouteImport.update({
+    id: '/messages',
+    path: '/messages',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/dashboard',
+    path: '/dashboard',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminCompaniesRoute =
+  AuthenticatedAdminCompaniesRouteImport.update({
+    id: '/companies',
+    path: '/companies',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/admin/offers': typeof AuthenticatedAdminOffersRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
   '/employee/space': typeof AuthenticatedEmployeeSpaceRoute
   '/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
@@ -135,10 +189,17 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/admin/offers': typeof AuthenticatedAdminOffersRoute
+  '/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/admin/users': typeof AuthenticatedAdminUsersRoute
   '/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
   '/employee/space': typeof AuthenticatedEmployeeSpaceRoute
   '/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
@@ -154,10 +215,17 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/employee': typeof AuthenticatedEmployeeRouteWithChildren
   '/_authenticated/recruiter': typeof AuthenticatedRecruiterRouteWithChildren
   '/signup/employee': typeof SignupEmployeeRoute
   '/signup/recruiter': typeof SignupRecruiterRoute
+  '/_authenticated/admin/companies': typeof AuthenticatedAdminCompaniesRoute
+  '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/messages': typeof AuthenticatedAdminMessagesRoute
+  '/_authenticated/admin/offers': typeof AuthenticatedAdminOffersRoute
+  '/_authenticated/admin/reviews': typeof AuthenticatedAdminReviewsRoute
+  '/_authenticated/admin/users': typeof AuthenticatedAdminUsersRoute
   '/_authenticated/employee/jobs': typeof AuthenticatedEmployeeJobsRoute
   '/_authenticated/employee/space': typeof AuthenticatedEmployeeSpaceRoute
   '/_authenticated/employee/tracking': typeof AuthenticatedEmployeeTrackingRoute
@@ -173,10 +241,17 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/login'
+    | '/admin'
     | '/employee'
     | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/admin/companies'
+    | '/admin/dashboard'
+    | '/admin/messages'
+    | '/admin/offers'
+    | '/admin/reviews'
+    | '/admin/users'
     | '/employee/jobs'
     | '/employee/space'
     | '/employee/tracking'
@@ -190,10 +265,17 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/login'
+    | '/admin'
     | '/employee'
     | '/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/admin/companies'
+    | '/admin/dashboard'
+    | '/admin/messages'
+    | '/admin/offers'
+    | '/admin/reviews'
+    | '/admin/users'
     | '/employee/jobs'
     | '/employee/space'
     | '/employee/tracking'
@@ -208,10 +290,17 @@ export interface FileRouteTypes {
     | '/contact'
     | '/faq'
     | '/login'
+    | '/_authenticated/admin'
     | '/_authenticated/employee'
     | '/_authenticated/recruiter'
     | '/signup/employee'
     | '/signup/recruiter'
+    | '/_authenticated/admin/companies'
+    | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/messages'
+    | '/_authenticated/admin/offers'
+    | '/_authenticated/admin/reviews'
+    | '/_authenticated/admin/users'
     | '/_authenticated/employee/jobs'
     | '/_authenticated/employee/space'
     | '/_authenticated/employee/tracking'
@@ -296,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/recruiter/talents': {
       id: '/_authenticated/recruiter/talents'
       path: '/talents'
@@ -345,8 +441,71 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEmployeeJobsRouteImport
       parentRoute: typeof AuthenticatedEmployeeRoute
     }
+    '/_authenticated/admin/users': {
+      id: '/_authenticated/admin/users'
+      path: '/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AuthenticatedAdminUsersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/reviews': {
+      id: '/_authenticated/admin/reviews'
+      path: '/reviews'
+      fullPath: '/admin/reviews'
+      preLoaderRoute: typeof AuthenticatedAdminReviewsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/offers': {
+      id: '/_authenticated/admin/offers'
+      path: '/offers'
+      fullPath: '/admin/offers'
+      preLoaderRoute: typeof AuthenticatedAdminOffersRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/messages': {
+      id: '/_authenticated/admin/messages'
+      path: '/messages'
+      fullPath: '/admin/messages'
+      preLoaderRoute: typeof AuthenticatedAdminMessagesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/companies': {
+      id: '/_authenticated/admin/companies'
+      path: '/companies'
+      fullPath: '/admin/companies'
+      preLoaderRoute: typeof AuthenticatedAdminCompaniesRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
+
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCompaniesRoute: typeof AuthenticatedAdminCompaniesRoute
+  AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminMessagesRoute: typeof AuthenticatedAdminMessagesRoute
+  AuthenticatedAdminOffersRoute: typeof AuthenticatedAdminOffersRoute
+  AuthenticatedAdminReviewsRoute: typeof AuthenticatedAdminReviewsRoute
+  AuthenticatedAdminUsersRoute: typeof AuthenticatedAdminUsersRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCompaniesRoute: AuthenticatedAdminCompaniesRoute,
+  AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminMessagesRoute: AuthenticatedAdminMessagesRoute,
+  AuthenticatedAdminOffersRoute: AuthenticatedAdminOffersRoute,
+  AuthenticatedAdminReviewsRoute: AuthenticatedAdminReviewsRoute,
+  AuthenticatedAdminUsersRoute: AuthenticatedAdminUsersRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
 
 interface AuthenticatedEmployeeRouteChildren {
   AuthenticatedEmployeeJobsRoute: typeof AuthenticatedEmployeeJobsRoute
@@ -387,11 +546,13 @@ const AuthenticatedRecruiterRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
   AuthenticatedEmployeeRoute: typeof AuthenticatedEmployeeRouteWithChildren
   AuthenticatedRecruiterRoute: typeof AuthenticatedRecruiterRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
   AuthenticatedEmployeeRoute: AuthenticatedEmployeeRouteWithChildren,
   AuthenticatedRecruiterRoute: AuthenticatedRecruiterRouteWithChildren,
 }
@@ -412,13 +573,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
