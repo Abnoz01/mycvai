@@ -1,11 +1,12 @@
 ARG BUN_VERSION=1.2.21
+ARG NODE_VERSION=22
 
-FROM oven/bun:${BUN_VERSION}-alpine AS deps
+FROM oven/bun:${BUN_VERSION} AS deps
 WORKDIR /app
 COPY package.json bun.lock bunfig.toml ./
 RUN bun install --frozen-lockfile
 
-FROM oven/bun:${BUN_VERSION}-alpine AS builder
+FROM oven/bun:${BUN_VERSION} AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -19,15 +20,17 @@ ENV VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
 
 RUN bun run build
 
-FROM oven/bun:${BUN_VERSION}-alpine AS runner
+FROM node:${NODE_VERSION}-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV HOST=0.0.0.0
 ENV PORT=8080
 
-COPY --from=builder /app /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/wrangler.jsonc ./wrangler.jsonc
+COPY --from=builder /app/dist ./dist
 
 EXPOSE 8080
 
-CMD ["bun", "run", "preview", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["node", "node_modules/wrangler/bin/wrangler.js", "dev", "--config", "dist/server/wrangler.json", "--ip", "0.0.0.0", "--port", "8080"]
