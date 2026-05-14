@@ -14,6 +14,7 @@ import { Upload, FileText, Sparkles, Languages, CheckCircle2, Download, Briefcas
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { aiCorrectCv, aiTranslateCv } from "@/lib/ai.functions";
+import { extractCvText } from "@/lib/cv-extract";
 
 export const Route = createFileRoute("/_authenticated/employee/space")({ component: EmployeeSpace });
 
@@ -26,6 +27,8 @@ function EmployeeSpace() {
   const [aiTab, setAiTab] = useState<"edit" | "tools">("edit");
   const [cvText, setCvText] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedName, setUploadedName] = useState<string | null>(null);
   const correctFn = useServerFn(aiCorrectCv);
   const translateFn = useServerFn(aiTranslateCv);
 
@@ -34,6 +37,7 @@ function EmployeeSpace() {
     const { data } = await supabase.from("employee_profiles").select("*").eq("user_id", user.id).maybeSingle();
     setProfile(data);
     setCvText(data?.cv_text ?? "");
+    if (data?.cv_path) setUploadedName(data.cv_path.split("/").pop() ?? null);
     setStats({
       applications: 0, interactions: 0,
       score: data?.cv_score ?? 0, views: data?.profile_views ?? 0,
@@ -59,27 +63,30 @@ function EmployeeSpace() {
 
   const uploadCv = async (file: File) => {
     if (!user) return;
-    const ext = file.name.split(".").pop();
-    const path = `${user.id}/cv.${ext}`;
-    const { error } = await supabase.storage.from("cvs").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${user.id}/cv.${ext}`;
+      const { error } = await supabase.storage.from("cvs").upload(path, file, { upsert: true });
+      if (error) { toast.error(error.message); return; }
 
-    const isPlainText = file.type.startsWith("text/") || file.name.toLowerCase().endsWith(".txt");
-    const text = isPlainText
-      ? await file.text().then((value) => value.replace(/\u0000/g, "")).catch(() => "")
-      : "";
-    const nextCvText = text || cvText;
-    if (text) setCvText(text);
+      const extracted = await extractCvText(file);
+      const nextCvText = extracted || cvText;
+      if (extracted) setCvText(extracted);
 
-    const { error: profileError } = await supabase.from("employee_profiles").upsert({
-      user_id: user.id,
-      cv_path: path,
-      cv_text: nextCvText,
-      cv_score: Math.min(100, (nextCvText?.length ?? 0) / 30),
-    });
-    if (profileError) return toast.error(profileError.message);
-    toast.success("CV uploaded");
-    load();
+      const { error: profileError } = await supabase.from("employee_profiles").upsert({
+        user_id: user.id,
+        cv_path: path,
+        cv_text: nextCvText,
+        cv_score: Math.min(100, (nextCvText?.length ?? 0) / 30),
+      });
+      if (profileError) { toast.error(profileError.message); return; }
+      setUploadedName(file.name);
+      toast.success(extracted ? `CV uploaded · ${extracted.length} caractères extraits` : "CV uploaded");
+      load();
+    } finally {
+      setUploading(false);
+    }
   };
 
   const runCorrect = async () => {
@@ -131,11 +138,29 @@ function EmployeeSpace() {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> {t("employee.cv")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-6 hover:border-primary">
-              <Upload className="h-6 w-6 text-primary" />
-              <div>
-                <div className="font-medium">{t("employee.uploadCv")}</div>
-                <div className="text-xs text-muted-foreground">PDF · DOC · DOCX · TXT</div>
+            <label
+              className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-6 transition ${
+                uploadedName
+                  ? "border-primary/60 bg-primary/5"
+                  : "border-border hover:border-primary"
+              } ${uploading ? "opacity-60 pointer-events-none" : ""}`}
+            >
+              {uploading ? (
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              ) : uploadedName ? (
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              ) : (
+                <Upload className="h-6 w-6 text-primary" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="font-medium truncate">
+                  {uploading ? "Upload en cours…" : uploadedName ? uploadedName : t("employee.uploadCv")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {uploadedName
+                    ? `${cvText ? `${cvText.length} caractères extraits · ` : ""}Cliquez pour remplacer`
+                    : "PDF · DOC · DOCX · TXT"}
+                </div>
               </div>
               <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" onChange={(e) => e.target.files?.[0] && uploadCv(e.target.files[0])} />
             </label>
@@ -166,20 +191,29 @@ function EmployeeSpace() {
               <TabsTrigger value="tools"><Sparkles className="mr-2 h-4 w-4" />{t("employee.aiTools")}</TabsTrigger>
             </TabsList>
             <TabsContent value="edit" className="grid gap-4 md:grid-cols-2">
-              <Textarea value={cvText} onChange={(e) => setCvText(e.target.value)} rows={18} placeholder="Contenu du CV..." />
-              <div className="rounded-xl border bg-card p-4 text-sm whitespace-pre-wrap max-h-[450px] overflow-auto">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">{t("employee.livePreview")}</div>
-                {cvText || <span className="text-muted-foreground">—</span>}
+              <Textarea value={cvText} onChange={(e) => setCvText(e.target.value)} rows={20} placeholder="Contenu du CV..." className="font-mono text-sm" />
+              <div className="rounded-xl border bg-white text-slate-900 shadow-inner p-6 text-sm max-h-[500px] overflow-auto">
+                <div className="mb-3 flex items-center justify-between border-b pb-2">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t("employee.livePreview")}</div>
+                  <div className="text-[10px] text-slate-400">{cvText.length} car.</div>
+                </div>
+                {cvText ? (
+                  <article className="prose prose-sm max-w-none whitespace-pre-wrap leading-relaxed text-slate-800">
+                    {cvText}
+                  </article>
+                ) : (
+                  <span className="text-slate-400">Aucun contenu — uploadez un CV ou écrivez ici.</span>
+                )}
               </div>
             </TabsContent>
             <TabsContent value="tools" className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
-                <Button onClick={runTranslate} disabled={aiLoading} variant="outline" className="gap-2"><Languages className="h-4 w-4" />{t("employee.translate")}</Button>
-                <Button onClick={runCorrect} disabled={aiLoading} variant="outline" className="gap-2"><CheckCircle2 className="h-4 w-4" />{t("employee.grammar")}</Button>
+                <Button onClick={runTranslate} disabled={aiLoading || !cvText} variant="outline" className="gap-2"><Languages className="h-4 w-4" />{t("employee.translate")}</Button>
+                <Button onClick={runCorrect} disabled={aiLoading || !cvText} variant="outline" className="gap-2"><CheckCircle2 className="h-4 w-4" />{t("employee.grammar")}</Button>
               </div>
-              <div className="rounded-xl border bg-card p-4 text-sm whitespace-pre-wrap max-h-[400px] overflow-auto">
-                <div className="mb-2 text-xs font-semibold text-muted-foreground">{t("employee.livePreview")}</div>
-                {aiLoading ? "..." : cvText}
+              <div className="rounded-xl border bg-white text-slate-900 p-6 text-sm whitespace-pre-wrap max-h-[400px] overflow-auto leading-relaxed">
+                <div className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-500">{t("employee.livePreview")}</div>
+                {aiLoading ? <span className="text-slate-400">Traitement IA…</span> : cvText || <span className="text-slate-400">—</span>}
               </div>
             </TabsContent>
           </Tabs>
