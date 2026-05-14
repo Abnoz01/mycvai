@@ -37,6 +37,7 @@ function EmployeeSpace() {
     const { data } = await supabase.from("employee_profiles").select("*").eq("user_id", user.id).maybeSingle();
     setProfile(data);
     setCvText(data?.cv_text ?? "");
+    if (data?.cv_path) setUploadedName(data.cv_path.split("/").pop() ?? null);
     setStats({
       applications: 0, interactions: 0,
       score: data?.cv_score ?? 0, views: data?.profile_views ?? 0,
