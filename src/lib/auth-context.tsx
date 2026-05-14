@@ -34,11 +34,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRole(null);
       }
     });
-    supabase.auth.getSession().then(({ data }) => {
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      if (!data.session) {
+        setSession(null);
+        setRole(null);
+        return;
+      }
+
+      const { data: userData, error } = await supabase.auth.getUser();
+      if (error || !userData.user) {
+        await supabase.auth.signOut({ scope: "local" });
+        setSession(null);
+        setRole(null);
+        return;
+      }
+
       setSession(data.session);
-      if (data.session?.user) fetchRole(data.session.user.id).finally(() => setLoading(false));
-      else setLoading(false);
-    });
+      await fetchRole(userData.user.id);
+    }).finally(() => setLoading(false));
     return () => sub.subscription.unsubscribe();
   }, []);
 
