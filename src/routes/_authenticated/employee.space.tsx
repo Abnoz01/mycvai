@@ -138,11 +138,29 @@ function EmployeeSpace() {
         <Card>
           <CardHeader><CardTitle className="flex items-center gap-2"><FileText className="h-5 w-5 text-primary" /> {t("employee.cv")}</CardTitle></CardHeader>
           <CardContent className="space-y-4">
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed border-border p-6 hover:border-primary">
-              <Upload className="h-6 w-6 text-primary" />
-              <div>
-                <div className="font-medium">{t("employee.uploadCv")}</div>
-                <div className="text-xs text-muted-foreground">PDF · DOC · DOCX · TXT</div>
+            <label
+              className={`flex cursor-pointer items-center gap-3 rounded-xl border-2 border-dashed p-6 transition ${
+                uploadedName
+                  ? "border-primary/60 bg-primary/5"
+                  : "border-border hover:border-primary"
+              } ${uploading ? "opacity-60 pointer-events-none" : ""}`}
+            >
+              {uploading ? (
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              ) : uploadedName ? (
+                <CheckCircle2 className="h-6 w-6 text-primary" />
+              ) : (
+                <Upload className="h-6 w-6 text-primary" />
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="font-medium truncate">
+                  {uploading ? "Upload en cours…" : uploadedName ? uploadedName : t("employee.uploadCv")}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {uploadedName
+                    ? `${cvText ? `${cvText.length} caractères extraits · ` : ""}Cliquez pour remplacer`
+                    : "PDF · DOC · DOCX · TXT"}
+                </div>
               </div>
               <input type="file" className="hidden" accept=".pdf,.doc,.docx,.txt" onChange={(e) => e.target.files?.[0] && uploadCv(e.target.files[0])} />
             </label>
