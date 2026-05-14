@@ -2,9 +2,10 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { generateText, Output } from "ai";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { createLovableAiGatewayProvider } from "./ai-gateway";
+import { createAzureAnthropicProvider } from "./ai-gateway";
 
-const model = () => createLovableAiGatewayProvider(process.env.LOVABLE_API_KEY!)("google/gemini-2.5-flash");
+const MODEL_ID = "claude-sonnet-4-6";
+const model = () => createAzureAnthropicProvider(process.env.AZURE_ANTHROPIC_API_KEY!)(MODEL_ID);
 
 export const aiCorrectCv = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

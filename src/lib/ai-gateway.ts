@@ -1,11 +1,12 @@
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+import { createAnthropic } from "@ai-sdk/anthropic";
 
-export const createLovableAiGatewayProvider = (lovableApiKey: string) =>
-  createOpenAICompatible({
-    name: "lovable",
-    baseURL: "https://ai.gateway.lovable.dev/v1",
+// Azure AI Foundry exposes an Anthropic-compatible endpoint.
+// The provider appends `/v1/messages`, so baseURL must end with `/anthropic`.
+export const createAzureAnthropicProvider = (apiKey: string) =>
+  createAnthropic({
+    baseURL: "https://momah-azure-ai-foundry.services.ai.azure.com/anthropic",
+    apiKey,
     headers: {
-      "Lovable-API-Key": lovableApiKey,
-      "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+      "anthropic-version": "2023-06-01",
     },
   });
